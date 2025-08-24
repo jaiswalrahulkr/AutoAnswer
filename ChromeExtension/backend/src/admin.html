@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Admin Dashboard</title>
+  <style>
+    body { font-family: system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif; margin: 16px; }
+    h1 { font-size: 18px; margin: 0 0 12px; }
+    input, button { padding: 6px 8px; }
+    table { border-collapse: collapse; width: 100%; margin-top: 12px; }
+    th, td { border: 1px solid #ddd; padding: 8px; font-size: 12px; }
+    th { background: #f5f5f5; text-align: left; }
+    .row { display: flex; gap: 8px; align-items: center; margin-top: 8px; }
+    .muted { color: #666; font-size: 12px; }
+  </style>
+</head>
+<body>
+  <h1>Admin Dashboard</h1>
+  <div class="row">
+    <input id="token" type="password" placeholder="Paste session token" style="flex:1;" />
+    <button id="saveToken">Use Token</button>
+    <input id="search" type="text" placeholder="Search email/name" style="flex:1;" />
+    <button id="refresh">Search</button>
+  </div>
+  <div class="muted">Tip: Open from extension popup while logged in as admin to auto-fill token.</div>
+
+  <table id="usersTable">
+    <thead>
+      <tr>
+        <th>Email</th><th>Name</th><th>Credits</th><th>Actions</th>
+      </tr>
+    </thead>
+    <tbody></tbody>
+  </table>
+
+  <script>
+    const apiBase = location.origin;
+    const tokenInput = document.getElementById('token');
+    const saveTokenBtn = document.getElementById('saveToken');
+    const searchInput = document.getElementById('search');
+    const refreshBtn = document.getElementById('refresh');
+    const tbody = document.querySelector('#usersTable tbody');
+
+    function getToken() {
+      return sessionStorage.getItem('admintoken') || '';
+    }
+    function setToken(t) {
+      sessionStorage.setItem('admintoken', t);
+      tokenInput.value = t;
+    }
+
+    async function fetchJson(path, opts={}) {
+      const headers = Object.assign({ 'Content-Type': 'application/json' }, opts.headers||{});
+      const t = getToken();
+      if (t) headers['Authorization'] = 'Bearer ' + t;
+      const resp = await fetch(apiBase + path + (opts.query || ''), Object.assign({}, opts, { headers }));
+      if (!resp.ok) throw new Error(resp.status + ' ' + (await resp.text()));
+      return resp.json();
+    }
+
+    function renderUsers(users) {
+      tbody.innerHTML = '';
+      for (const u of users) {
+        const tr = document.createElement('tr');
+        tr.innerHTML = `<td>${u.email}</td><td>${u.name||''}</td><td>${u.creditsBalance}</td>`;
+        const td = document.createElement('td');
+        const input = document.createElement('input'); input.type = 'number'; input.placeholder = '+/-'; input.style.width = '80px';
+        const btn = document.createElement('button'); btn.textContent = 'Apply';
+        btn.addEventListener('click', async () => {
+          const delta = parseInt(input.value, 10);
+          if (!Number.isFinite(delta)) return alert('Enter a number');
+          await fetchJson('/admin/credits', { method: 'POST', body: JSON.stringify({ userId: u.id, delta, reason: 'admin_ui' }) });
+          load();
+        });
+        td.appendChild(input); td.appendChild(btn);
+        tr.appendChild(td);
+        tbody.appendChild(tr);
+      }
+    }
+
+    async function load() {
+      const q = encodeURIComponent(searchInput.value || '');
+      const data = await fetchJson('/admin/users', { query: `?q=${q}` });
+      renderUsers(data.users || []);
+    }
+
+    saveTokenBtn.addEventListener('click', () => setToken(tokenInput.value.trim()));
+    refreshBtn.addEventListener('click', load);
+
+    // Autofill token from hash
+    const m = location.hash.match(/#token=([^&]+)/);
+    if (m) setToken(decodeURIComponent(m[1]));
+    tokenInput.value = getToken();
+    load().catch(err => console.error(err));
+  </script>
+</body>
+</html>
+
+

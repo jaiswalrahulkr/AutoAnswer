@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>AutoAnswer</title>
+  <style>
+    body { font-family: system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif; margin: 12px; width: 320px; }
+    h1 { font-size: 16px; margin: 0 0 8px; }
+    label { display: block; font-size: 12px; margin-top: 8px; color: #333; }
+    input[type="text"], input[type="password"] { width: 100%; box-sizing: border-box; padding: 6px 8px; }
+    .row { display: flex; align-items: center; justify-content: space-between; margin-top: 8px; }
+    button { width: 100%; padding: 8px 10px; margin-top: 12px; background: #1a73e8; color: white; border: none; border-radius: 4px; cursor: pointer; }
+    button:disabled { background: #9bb8f3; cursor: not-allowed; }
+    .status { margin-top: 8px; font-size: 12px; min-height: 16px; color: #555; }
+    .small { font-size: 11px; color: #666; }
+    .link { font-size: 12px; text-decoration: underline; cursor: pointer; color: #1a73e8; }
+    .auth { display: flex; align-items: center; gap: 8px; }
+    .avatar { width: 24px; height: 24px; border-radius: 50%; display: none; }
+    .secondary { background: #5f6368; }
+    .credits { margin-top: 10px; padding: 8px; background: #f5f5f5; border-radius: 6px; font-size: 12px; }
+    .buy-row { display: flex; gap: 8px; margin-top: 8px; }
+    .buy { flex: 1; background: #0f9d58; }
+  </style>
+  <script defer src="popup.js"></script>
+  </head>
+<body>
+  <h1>AutoAnswer</h1>
+
+  <div id="authSection">
+    <div class="auth">
+      <img id="userAvatar" class="avatar" alt="" />
+      <div id="userLabel" class="small" style="flex:1; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">Not signed in</div>
+    </div>
+    <button id="googleSignInBtn">Sign in with Google</button>
+    <button id="googleSignOutBtn" class="secondary" style="display:none;">Sign out</button>
+    <div id="creditsBox" class="credits" style="display:none;">
+      <div id="creditsText">Credits: -</div>
+      <div class="buy-row">
+        <button id="buySmallBtn" class="buy" title="Pay via scanner">Buy 50 (₹200)</button>
+        <button id="buyLargeBtn" class="buy" title="Pay via scanner">Buy 200 (₹500)</button>
+      </div>
+      <div id="outOfCredits" class="small" style="color:#b00020; display:none; margin-top:6px; font-weight:bold;">
+        You're out of credits, buy more. <a id="openScannerLink" href="#" target="_blank">Open scanner</a>
+        <div id="paymentDisclaimer" style="margin-top:6px;color:#555;font-weight:normal;">
+          After payment, credits will be added within 15 minutes. For sharing the screenshot of payment and for any clarification, please reach out on
+          <a id="paymentEmailLink" href="mailto:qaefp43@gmail.com" target="_blank">qaefp43@gmail.com</a>.
+        </div>
+      </div>
+    </div>
+    <div id="nonAdminNote" class="small" style="display:none; margin-top:8px; color:#555;">
+      Use <b>Ctrl+Shift+F</b> to autofill answers on the current page. Please make payment at least <b>1 hour</b> before your test. For sharing the screenshot of payment and for any clarification, please reach out on
+      <a id="nonAdminSupportEmail" href="mailto:qaefp43@gmail.com" target="_blank">qaefp43@gmail.com</a>.
+    </div>
+    <div id="signInNote" class="small" style="display:none; margin-top:6px; color:#555;">
+      Tip: Use <b>Ctrl+Shift+F</b> to autofill answers on the current page. It works well for <b>MCQ questions</b> and <b>programmatic solutions</b>.
+      After you sign in, <b>10 free credits</b> will be available to use.
+    </div>
+  </div>
+
+  <div id="adminOnly" style="display:none;">
+    <label>Provider
+      <select id="apiProvider">
+        <option value="openai">OpenAI</option>
+        <option value="gemini">Gemini</option>
+      </select>
+    </label>
+    <label>API Key
+      <input id="apiKey" type="password" placeholder="API key..." />
+    </label>
+
+    <div class="row">
+      <label for="autoSubmit" style="margin: 0;">
+        <input id="autoSubmit" type="checkbox" /> Auto-submit after fill
+      </label>
+      <span id="openOptions" class="link">Options</span>
+    </div>
+  </div>
+
+  <div class="status" id="status"></div>
+  <div id="adminDownload" class="row" style="display:none;">
+    <button id="downloadLogBtn" style="background:#5f6368;">Download Log</button>
+  </div>
+  <div class="row" id="adminLinkRow" style="display:none; justify-content:flex-end;">
+    <span id="openAdmin" class="link">Admin Dashboard</span>
+  </div>
+  <div class="small">Tip: Press Ctrl+Shift+F to autofill via keyboard.</div>
+</body>
+</html>
+
+

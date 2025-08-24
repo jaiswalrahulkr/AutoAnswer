@@ -1,0 +1,44 @@
+{
+  "manifest_version": 3,
+  "name": "AutoAnswer",
+  "version": "0.1.0",
+  "description": "Capture page content, ask AI for answers, and auto-fill forms.",
+  "action": {
+    "default_title": "autoanswer",
+    "default_popup": "popup.html"
+  },
+  "background": {
+    "service_worker": "background.js",
+    "type": "module"
+  },
+  "permissions": [
+    "activeTab",
+    "scripting",
+    "storage",
+    "identity",
+    "tabs",
+    "clipboardRead",
+    "downloads"
+  ],
+  "host_permissions": [
+    "<all_urls>"
+  ],
+  "content_scripts": [
+    {
+      "matches": ["<all_urls>"],
+      "js": ["content.js"],
+      "run_at": "document_idle"
+    }
+  ],
+  "options_page": "options.html",
+  "commands": {
+    "trigger_autofill": {
+      "suggested_key": {
+        "default": "Ctrl+Shift+F"
+      },
+      "description": "Capture page and fill answers"
+    }
+  }
+}
+
+
